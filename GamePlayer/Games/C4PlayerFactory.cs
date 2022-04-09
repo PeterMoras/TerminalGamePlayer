@@ -11,12 +11,22 @@ namespace GamePlayer.Games.Connect4
             _provider = provider;
         }
 
-        public IPlayer CreatePlayer(PlayerType type)
+        public IPlayer CreatePlayer(PlayerType type, C4PieceType pieceType)
         {
-            if (type == PlayerType.Human)
-                return _provider.GetRequiredService<C4ConsolePlayer>();
+            var inputService = _provider.GetRequiredService<IInputListener>();
+            var model = _provider.GetRequiredService<IC4Model>();
+            IC4Player player;
 
-            return _provider.GetRequiredService<C4EasyAIPlayer>();
+            switch (type)
+            {
+                case PlayerType.Human:
+                    return new C4ConsolePlayer(inputService, model, pieceType);
+                default:
+                    return new C4EasyAIPlayer(model, pieceType);
+
+            }
+
+
         }
     }
 }

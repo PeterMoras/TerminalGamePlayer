@@ -8,16 +8,16 @@ Console.WriteLine("Hello, World!");
 
 await using var provider = new ServiceCollection()
             .AddSingleton<IInputListener, InputListener>()
-            .AddSingleton<IGameFactory, GameFactory>()
+            .AddScoped<IGameFactory, GameFactory>()
             .AddSingleton<IGameSelectManager, GameSelectManager>()
+            .AddScoped<ITurnManager, TurnManager>()
 
             //  Connect4 Game Services 
-            .AddSingleton<C4Manager>()
-            .AddSingleton<IGameManager, C4Manager>()
-            .AddSingleton<IC4View, C4View>()
-            .AddSingleton<IC4Model, C4Model>()
-            .AddSingleton<ITurnManager, TurnManager>()
-            .AddSingleton<IPlayerFactory, C4PlayerFactory>()
+            .AddScoped<C4Manager>()
+            .AddScoped<IGameManager, C4Manager>()
+            .AddScoped<IC4View, C4View>()
+            .AddScoped<IC4Model, C4Model>()
+            .AddScoped<IPlayerFactory, C4PlayerFactory>()
             .AddScoped<C4ConsolePlayer>()
             .AddScoped<C4EasyAIPlayer>()
 

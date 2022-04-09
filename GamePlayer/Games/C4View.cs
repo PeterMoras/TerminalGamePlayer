@@ -4,16 +4,19 @@ namespace GamePlayer.Games.Connect4
     {
         public void StartShowing();
         void StopShowing();
+
+        void SetAfterMessage(string message);
     }
 
 
 
 
 
-    public class C4View : IC4View
+    public class C4View : IC4View, IDisposable
     {
         private IC4Model _model;
         bool _visible;
+        private string _afterMessage;
 
         public C4View(IC4Model model)
         {
@@ -38,27 +41,14 @@ namespace GamePlayer.Games.Connect4
         }
 
         // 7 columns, 6 rows
-        void showView(C4Piece[,] pieces)
+        void showView(C4PieceType[,] pieces)
         {
+            Console.Clear();
             drawLines(pieces);
-            // var p = pieces;
-            // Console.WriteLine($"  1 2 3 4 5 6");
-            // Console.WriteLine($"7 ${p[0, 6]}|${p[1, 6]}|${p[2, 6]}|${p[3, 6]}|${p[4, 6]}|${p[5, 6]}");
-            // //Console.WriteLine("-----------");
-            // Console.WriteLine($"7 ${p[0, 6]}|${p[1, 6]}|${p[2, 6]}|${p[3, 6]}|${p[4, 6]}|${p[5, 6]}");
-            // // Console.WriteLine("-----------");
-            // Console.WriteLine($"5  | | | | | ");
-            // // Console.WriteLine("-----------");
-            // Console.WriteLine($"4  | | | | | ");
-            // // Console.WriteLine("-----------");
-            // Console.WriteLine($"3  | | | | | ");
-            // // Console.WriteLine("-----------");
-            // Console.WriteLine($"2  | | | | | ");
-            // // Console.WriteLine("-----------");
-            // Console.WriteLine($"1  | | | | | ");
-            // Console.WriteLine($"  -----------");
+            if (!String.IsNullOrEmpty(_afterMessage))
+                Console.WriteLine(_afterMessage);
         }
-        void drawLines(C4Piece[,] pieces)
+        void drawLines(C4PieceType[,] pieces)
         {
             var p = pieces;
             var cols = pieces.GetLength(0);
@@ -86,6 +76,18 @@ namespace GamePlayer.Games.Connect4
             }
             Console.WriteLine();
 
+
+        }
+
+        public void SetAfterMessage(string message)
+        {
+            _afterMessage = message;
+            StartShowing();
+        }
+
+        public void Dispose()
+        {
+            _visible = false;
         }
     }
 }

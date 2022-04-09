@@ -14,7 +14,7 @@ public class UnitTest1
             .AddSingleton<IGameManager, C4Manager>()
             .AddSingleton<IInputListener, InputListener>()
             .AddSingleton<IC4View, C4View>()
-            .AddSingleton<ITurnManager, C4TurnManager>()
+            .AddSingleton<ITurnManager, TurnManager>()
             .BuildServiceProvider();
         Assert.Equal(1, 1);
         var gm1 = provider.GetService<C4Manager>();

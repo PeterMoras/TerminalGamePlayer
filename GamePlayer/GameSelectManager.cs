@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 namespace GamePlayer
 {
 
@@ -13,7 +14,7 @@ namespace GamePlayer
     {
         TaskCompletionSource keepManagerAliveTask;
 
-        private readonly IGameFactory _gameFactory;
+        private readonly IServiceProvider _provider;
         private readonly IInputListener _input;
         private IGameManager? _activeGame;
 
@@ -21,9 +22,9 @@ namespace GamePlayer
 
         public IGameManager? ActiveGame => _activeGame;
 
-        public GameSelectManager(IInputListener input, IGameFactory gameFactory)
+        public GameSelectManager(IInputListener input, IServiceProvider provider)
         {
-            _gameFactory = gameFactory;
+            _provider = provider;
             _input = input;
             keepManagerAliveTask = new TaskCompletionSource();
         }
@@ -47,7 +48,7 @@ namespace GamePlayer
         {
             Console.Clear();
             Console.WriteLine("Choose a game to play:");
-            var games = _gameFactory.GetGameList();
+            var games = Enumeration.GetAll<GameList>();
             int index = 0;
             foreach (var game in games)
             {
@@ -70,29 +71,31 @@ namespace GamePlayer
 
         async Task RunGameTask(GameList gameToStart)
         {
-            var gameManager = _gameFactory.CreateGame(gameToStart);
-            if (gameManager == null)
+            try
             {
-                Console.WriteLine("Unable to find the game: " + gameToStart.Name);
-            }
-            else
-            {
-                _activeGame = gameManager;
-                try
+                using var gameScope = _provider.CreateScope();
+                var gameFactory = gameScope.ServiceProvider.GetRequiredService<IGameFactory>();
+                var gameManager = gameFactory.CreateGame(gameToStart);
+                if (gameManager == null)
                 {
-                    await gameManager.StartGame();
+                    Console.WriteLine("Unable to find the game: " + gameToStart.Name);
                 }
-                catch (Exception e)
+                else
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("The Game had an Exception and exited abruptly");
-                    Console.Error.WriteLine(e);
-                    Console.ReadLine();
-
+                    _activeGame = gameManager;
+                    await gameManager.StartWork();
                 }
+                gameScope.Dispose();
 
             }
+            catch (Exception e)
+            {
+                Console.WriteLine();
+                Console.WriteLine("The Game had an Exception and exited abruptly");
+                Console.Error.WriteLine(e);
+                Console.ReadLine();
 
+            }
 
             GameComplete();
         }
@@ -110,7 +113,7 @@ namespace GamePlayer
             else if (!int.TryParse("" + key.KeyChar, out selection)) return;
 
             //set to list because IEnumerable would be slower due to multiple gets
-            var games = _gameFactory.GetGameList().ToList();
+            var games = Enumeration.GetAll<GameList>().ToList();
 
             if (selection >= games.Count)
                 return; //out of range, just keep listening...
